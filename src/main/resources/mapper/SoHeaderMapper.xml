@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hzero.order.infra.mapper.SoHeaderMapper">
+
+    <select id="selectOrders" parameterType="com.hzero.order.api.dto.OrderDTO" resultType="com.hzero.order.api.dto.ViewOrderDTO">
+        SELECT  d.order_number,a.company_name,b.customer_name,d.order_date,d.order_status,h.order_amount,f.line_number,c.item_code,c.item_description,f.order_quantity_uom,f.order_quantity,f.unit_selling_price,f.order_quantity*f.unit_selling_price as line_amount,f.description
+        FROM hodr_company as a,hodr_customer as b,hodr_item as c,hodr_so_header as d,hodr_so_line as f,
+        (SELECT SUM(line_amount) as order_amount
+        from
+        (SELECT f.order_quantity, f.unit_selling_price, f.order_quantity*f.unit_selling_price as line_amount
+        FROM hodr_so_header as d, hodr_so_line as f
+        WHERE d.so_header_id = f.so_header_id
+        <if test="soHeader.orderNumber != null and soHeader.orderNumber != ''">
+            and d.order_number = #{soHeader.orderNumber}
+        </if>
+        ) as g) as h
+        WHERE d.company_id = a.company_id and d.customer_id = b.customer_id and c.item_id=f.item_id and d.so_header_id = f.so_header_id
+        <if test="item.itemId != null and item.itemId != ''">
+            and c.item_id = #{item.itemId}
+        </if>
+        <if test="soHeader.orderStatus != null and soHeader.orderStatus != ''">
+            and d.order_status = #{soHeader.orderStatus}
+        </if>
+        <if test="soHeader.orderNumber !=null and soHeader.orderNumber != ''">
+            and d.order_number = #{soHeader.orderNumber}
+        </if>
+    </select>
+
+</mapper>
